@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { login, signup } from "../controllers/authController";
+import { removeAsset } from "../controllers/assetController";
 
 const router = Router();
 
@@ -75,6 +76,7 @@ const router = Router();
  *       500:
  *         description: Server Error
  */
+
 router.post("/signup", signup);
 router.post("/login", login);
 

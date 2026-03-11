@@ -19,13 +19,12 @@ export const findUserByEmail = async (email: string) => {
   return prisma.user.findUnique({ where: { email } });
 };
 
-
 export const verifyPassword = async (password: string, hash: string) => {
   return await bcrypt.compare(password, hash);
 };
 
 export const generateToken = (user: any) => {
-  return jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+  return jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
     expiresIn: "1h",
   });
 };

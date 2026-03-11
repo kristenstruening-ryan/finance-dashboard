@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
 import authRoutes from "./routes/authRoutes";
+import assetRoutes from "./routes/assetRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import cors from "cors";
@@ -38,6 +39,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/assets", assetRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}/`);
