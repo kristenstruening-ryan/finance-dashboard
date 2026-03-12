@@ -32,5 +32,8 @@ model Asset {
   user  User  @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+  lastPrice Float? @default(0)
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, symbol])
 }
