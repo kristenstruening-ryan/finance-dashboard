@@ -6,6 +6,8 @@ import assetRoutes from "./routes/assetRoutes";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 import cors from "cors";
+import marketRoutes from "./routes/marketRoutes";
+import tradeRoutes from "./routes/tradeRoutes";
 
 const PORT = process.env.PORT || 5000;
 
@@ -31,15 +33,24 @@ const swaggerOptions = {
   apis: ["./src/routes/*.ts", "./src/controllers/*.ts", "./dist/routes/*.js"],
 };
 
-const app = express();
-app.use(cors());
+export const app = express();
+app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow your Vite frontend
+    credentials: true, // Allow headers/tokens
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 const specs = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
-app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/assets", assetRoutes);
+app.use("/api/market", marketRoutes);
+app.use("/api/rebalance", tradeRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}/`);

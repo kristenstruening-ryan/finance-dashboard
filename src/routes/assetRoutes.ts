@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   addAsset,
   getAssetsByUser,
+  getHistory,
   removeAsset,
   searchAssets,
   updateQuantity,
@@ -133,5 +134,6 @@ router.post("/", addAsset);
 router.patch("/:id", updateQuantity);
 router.delete("/:id", removeAsset);
 router.get("/search", searchAssets);
+router.get("/history", getHistory);
 
 export default router;

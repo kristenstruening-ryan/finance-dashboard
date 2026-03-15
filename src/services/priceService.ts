@@ -1,76 +1,93 @@
-import { match } from "assert";
 import axios from "axios";
 
-const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_KEY;
+const FINNHUB_KEY = process.env.FINNHUB_KEY;
+const BASE_URL = "https://finnhub.io/api/v1";
+
+export interface FinnhubQuote {
+  c: number;
+  d: number;
+  dp: number;
+  h: number;
+  l: number;
+  o: number;
+  pc: number;
+}
+
+export const getLivePrice = async (
+  symbol: string,
+): Promise<FinnhubQuote | null> => {
+  const data = await getStockData(symbol);
+  return data
+    ? ({ c: data.price, d: data.change, dp: data.changePercent } as any)
+    : null;
+};
 
 export const getStockData = async (symbol: string) => {
   try {
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${ALPHA_VANTAGE_KEY}`;
+    const url = `${BASE_URL}/quote?symbol=${symbol.toUpperCase()}&token=${FINNHUB_KEY}`;
     const response = await axios.get(url);
-    const quote = response.data["Global Quote"];
-    if (!quote) return null;
+
+    const data = response.data;
+
+    if (!data.c || data.c === 0) {
+      console.warn(`No price data found for symbol: ${symbol}`);
+      return null;
+    }
+
     return {
-      price: parseFloat(quote["05. price"]),
-      change: quote["09. change"],
-      changePercent: quote["10. change percent"],
+      price: data.c,
+      change: data.d,
+      changePercent: data.dp,
     };
   } catch (error) {
-    console.error("Stock fetch error:", error);
+    console.error(`Finnhub fetch error for ${symbol}:`, error);
     return null;
   }
-};
-
-export const searchStockSymbols = async (keywords: string) => {
-  const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${ALPHA_VANTAGE_KEY}`;
-  const response = await axios.get(url);
-  return response.data.bestMatches.map((match: any) => ({
-    symbol: match["1. symbol"],
-    name: match["2. name"],
-    type: match["3. type"],
-    region: match["4. region"],
-  }));
-};
-
-const SYMBOL_MAP: Record<string, string> = {
-  btc: "bitcoin",
-  eth: "ethereum",
-  sol: "solana",
-  ada: "cardano",
-  dot: "polkadot",
 };
 
 export const getCryptoPrice = async (
   symbol: string,
 ): Promise<number | null> => {
   try {
-    const coinId = SYMBOL_MAP[symbol.toLowerCase()];
-    if (!coinId) return null;
-
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`;
-    const response = await axios.get(url);
-
-    return response.data[coinId]?.usd || null;
+    const data = await getStockData(symbol);
+    return data ? data.price : null;
   } catch (error) {
-    console.error(`Error fetching price for ${symbol}:`, error);
+    console.error(`Error fetching crypto price for ${symbol}:`, error);
     return null;
   }
 };
 
 export const searchSymbols = async (keywords: string) => {
   try {
-    const url = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${keywords}&apikey=${process.env.ALPHA_VANTAGE_KEY}`;
+    const url = `${BASE_URL}/search?q=${keywords}&token=${FINNHUB_KEY}`;
     const response = await axios.get(url);
-    const matches = response.data.bestMatches || [];
 
-    return matches.map((item: any) => ({
-      symbol: item["1. symbol"],
-      name: item["2. name"],
-      type: item["3. type"],
-      region: item["4. region"],
-      currency: item["8. currency"],
-    }));
+    const results = response.data.result;
+
+    if (!results || !Array.isArray(results)) {
+      return [];
+    }
+
+    return results
+      .filter((item: any) => {
+        const type = item.type?.toLowerCase();
+        const isValidType = ["common stock", "etc", "etf", "crypto"].includes(
+          type,
+        );
+        const isNotIndex =
+          !item.symbol.includes(".") && !item.symbol.includes(":");
+        return isValidType || isNotIndex;
+      })
+      .slice(0, 10)
+      .map((item: any) => ({
+        symbol: item.symbol,
+        name: item.description,
+        type: item.type || "Asset",
+        region: "",
+        currency: item.currency || "USD",
+      }));
   } catch (error) {
-    console.error("Symbol search error:", error);
+    console.error("Finnhub symbol search error:", error);
     return [];
   }
 };

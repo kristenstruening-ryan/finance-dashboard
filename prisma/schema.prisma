@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,29 +5,53 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
-
 model User {
-id  Int @id @default(autoincrement())
-email String @unique
-password  String
-name  String?
-assets  Asset[]
-createdAt DateTime  @default(now())
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
+  password  String
+  name      String?
+  assets    Asset[]
+  history   PortfolioHistory[]
+  createdAt DateTime           @default(now())
 }
 
 model Asset {
-  id  Int @id @default(autoincrement())
-  name  String
-  symbol  String
-  amount  Float
-  price Float?
-  category String
-  userId  Int
-  user  User  @relation(fields: [userId], references: [id])
+  id            Int           @id @default(autoincrement())
+  name          String
+  symbol        String
+  amount        Float         // Current total quantity owned
+  purchasePrice Float         @default(0)
+  category      String
+  userId        Int
+  user          User          @relation(fields: [userId], references: [id])
 
-  createdAt DateTime @default(now())
-  lastPrice Float? @default(0)
-  updatedAt DateTime @updatedAt
+
+  // One asset has MANY transactions.
+  transactions  Transaction[]
+
+  lastPrice     Float?        @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@unique([userId, symbol])
+}
+
+model PortfolioHistory {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  date       DateTime @default(now())
+  totalValue Float
+
+  @@unique([userId, date])
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  assetId   Int
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  type      String   // "BUY" or "SELL"
+  amount    Float    // Total dollar value of this specific trade
+  shares    Float    // Number of units moved in this specific trade
+  createdAt DateTime @default(now())
 }

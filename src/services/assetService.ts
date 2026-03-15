@@ -1,14 +1,10 @@
 import { prisma } from "../lib/prisma";
+import { AssetUpdateInput } from '../schemas/assetSchema';
 
-export const createAsset = async (
-  userId: number,
-  data: {
-    name: string;
-    symbol: string;
-    amount: number;
-    category: string;
-  },
-) => {
+/**
+ * Creates a single asset record.
+ */
+export const createAsset = async (userId: number, data: AssetUpdateInput) => {
   return prisma.asset.create({
     data: {
       ...data,
@@ -17,53 +13,69 @@ export const createAsset = async (
   });
 };
 
+/**
+ * Retrieves all assets belonging to a specific user.
+ */
 export const getUserAssets = async (userId: number) => {
   return prisma.asset.findMany({
     where: { userId },
   });
 };
 
+/**
+ * Deletes an asset, ensuring the userId matches for security.
+ */
 export const deleteAsset = async (assetId: number, userId: number) => {
   return prisma.asset.deleteMany({
     where: {
       id: assetId,
+      userId: userId,
     },
   });
 };
 
-//this is a mock list TODO: hook up db query or api call
-const MOCK_ASSETS = [
-  { id: 1, name: "Bitcoin", symbol: "BTC", category: "Crypto" },
-  { id: 2, name: "Ethereum", symbol: "ETH", category: "Crypto" },
-  { id: 3, name: "Apple", symbol: "AAPL", category: "Stock" },
-];
-
-export const searchGlobalAssets = async (query: string) => {
-  return MOCK_ASSETS.filter(
-    (a) =>
-      a.name.toLowerCase().includes(query.toLowerCase()) ||
-      a.symbol.toLowerCase().includes(query.toLowerCase()),
-  );
-};
-
-export const upsertAsset = async (userId: number, assetData: any) => {
-  return prisma.asset.upsert({
+/**
+ * Handles adding assets. If the asset exists, it calculates the
+ * weighted average purchase price and increments the amount (upsert).
+ */
+export const upsertAsset = async (userId: number, assetData: AssetUpdateInput) => {
+  const existingAsset = await prisma.asset.findUnique({
     where: {
       userId_symbol: {
         userId: userId,
         symbol: assetData.symbol,
       },
     },
-    update: {
-      amount: { increment: assetData.amount },
-    },
-    create: {
+  });
+
+  if (existingAsset) {
+    // Weighted Average calculation logic
+    const currentTotalCost = existingAsset.amount * existingAsset.purchasePrice;
+    const newAdditionCost = assetData.amount * assetData.purchasePrice;
+    const totalAmount = existingAsset.amount + assetData.amount;
+    const newAveragePrice = (currentTotalCost + newAdditionCost) / totalAmount;
+
+    return prisma.asset.update({
+      where: { id: existingAsset.id },
+      data: {
+        amount: totalAmount,
+        purchasePrice: newAveragePrice,
+      },
+    });
+  }
+
+  // If the asset doesn't exist for this user, create a new record
+  return prisma.asset.create({
+    data: {
       ...assetData,
       userId: userId,
     },
   });
 };
 
+/**
+ * Updates the last known market price of an asset.
+ */
 export const updateAssetPrice = async (assetId: number, price: number) => {
   return prisma.asset.update({
     where: { id: assetId },
@@ -71,6 +83,9 @@ export const updateAssetPrice = async (assetId: number, price: number) => {
   });
 };
 
+/**
+ * Finds a specific asset by ID, scoped to a user.
+ */
 export const getAssetById = async (assetId: number, userId: number) => {
   return prisma.asset.findFirst({
     where: {
@@ -80,6 +95,9 @@ export const getAssetById = async (assetId: number, userId: number) => {
   });
 };
 
+/**
+ * Simple quantity update for manual adjustments.
+ */
 export const updateAssetQuantity = async (
   assetId: number,
   userId: number,
@@ -91,5 +109,16 @@ export const updateAssetQuantity = async (
       userId: userId,
     },
     data: { amount: newAmount },
+  });
+};
+
+/**
+ * Fetches the last 30 days of portfolio snapshots.
+ */
+export const getPortfolioHistory = async (userId: number) => {
+  return prisma.portfolioHistory.findMany({
+    where: { userId },
+    orderBy: { date: "asc" },
+    take: 30,
   });
 };
