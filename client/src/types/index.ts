@@ -125,3 +125,28 @@ export interface TransactionWithAsset {
     name: string;
   };
 }
+
+export interface AssetResponse {
+  assets: Asset[];
+  summary: PortfolioSummary;
+}
+
+export interface Trade {
+  symbol: string;
+  name: string;
+  action: "BUY" | "SELL";
+  amount: number;
+  shares: number;
+}
+
+export interface SavedSimAsset {
+  id: number;
+  simWeight: number;
+}
+
+export interface TradeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  trades: Trade[];
+}

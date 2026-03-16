@@ -124,7 +124,7 @@ const Dashboard = () => {
           {/* Section 1: Welcome & Global Stats */}
           <header className="space-y-6">
             <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              <h1 className="text-xl md:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
                 Welcome back, {userName} 👋
               </h1>
               <p className="font-medium text-slate-500 dark:text-slate-400">
@@ -147,7 +147,7 @@ const Dashboard = () => {
                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">
                   Portfolio Value
                 </p>
-                <p className="text-2xl font-black text-slate-900 dark:text-white">
+                <p className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white truncate">
                   {formatValue(summary?.totalMarketValue || 0)}
                 </p>
               </div>
@@ -198,47 +198,44 @@ const Dashboard = () => {
           </header>
 
           {/* Section 2: Main Analytics Row */}
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-            {/* Performance Line Chart (Now 2/4 width) */}
-            <div className="lg:col-span-2">
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <div className="lg:col-span-2 w-full overflow-hidden">
               <PortfolioChart />
             </div>
-
-            {/* Distribution Pie Chart (1/4 width) */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 w-full overflow-hidden">
               <AssetChart data={distributionData} />
             </div>
-
-            {/* Execution History (1/4 width) */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 w-full">
               <RecentActivity />
             </div>
           </div>
-
           {/* Section 3: Asset Control Bar */}
-          <div className="p-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] shadow-sm">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="flex items-center gap-6">
-                <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl">
-                  <Wallet className="text-blue-600" size={32} />
+          <div className="p-6 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-4xl shadow-sm">
+            {/* Changed flex-col md:flex-row to lg:flex-row to stack earlier */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4 w-full lg:w-auto">
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl shrink-0">
+                  <Wallet className="text-blue-600" size={24} />
                 </div>
-                <div>
-                  <h2 className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400">
-                    Total Invested (Cost Basis)
+                <div className="min-w-0">
+                  <h2 className="text-[9px] font-black tracking-widest uppercase text-slate-400">
+                    Total Invested
                   </h2>
-                  <p className="text-4xl font-black text-slate-900 dark:text-white leading-none mt-1">
+                  <p className="text-lg md:text-xl font-black text-slate-900 dark:text-white truncate">
                     {formatValue(summary?.totalCostBasis || 0)}
                   </p>
                 </div>
               </div>
 
-              <div className="flex w-full gap-3 md:w-auto shrink-0">
+              {/* Buttons: Stacked on mobile, side-by-side on tablet/desktop */}
+              <div className="flex w-full sm:flex-row gap-3">
                 <button
                   onClick={fetchAssets}
-                  className="p-5 transition-all border rounded-2xl bg-slate-50 dark:bg-slate-950 hover:bg-white dark:hover:bg-slate-800 border-slate-200 dark:border-slate-800"
+                  className="p-4 border rounded-2xl bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
                 >
                   <RefreshCw
-                    size={24}
+                    size={20}
                     className={
                       loading
                         ? "animate-spin text-blue-500"
@@ -248,14 +245,13 @@ const Dashboard = () => {
                 </button>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="flex-1 md:flex-none flex items-center justify-center gap-2 px-10 py-5 text-[10px] font-black tracking-widest text-white uppercase bg-blue-600 hover:bg-blue-700 rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-[10px] font-black tracking-widest text-white uppercase bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20"
                 >
-                  <Plus size={18} /> Add New Asset
+                  <Plus size={16} /> Add Asset
                 </button>
               </div>
             </div>
           </div>
-
           {/* Section 4: Holdings List */}
           <div className="space-y-8">
             <div className="flex flex-col justify-between gap-6 px-2 md:flex-row md:items-end">
@@ -300,7 +296,7 @@ const Dashboard = () => {
 
             {/* Assets Grid */}
             {filteredAssets.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                 {filteredAssets.map((asset) => (
                   <AssetCard
                     key={asset.id}

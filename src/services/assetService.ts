@@ -1,5 +1,5 @@
 import { prisma } from "../lib/prisma";
-import { AssetUpdateInput } from '../schemas/assetSchema';
+import { AssetUpdateInput } from "../schemas/assetSchema";
 
 /**
  * Creates a single asset record.
@@ -38,41 +38,50 @@ export const deleteAsset = async (assetId: number, userId: number) => {
  * Handles adding assets. If the asset exists, it calculates the
  * weighted average purchase price and increments the amount (upsert).
  */
-export const upsertAsset = async (userId: number, assetData: AssetUpdateInput) => {
-  const existingAsset = await prisma.asset.findUnique({
-    where: {
-      userId_symbol: {
-        userId: userId,
-        symbol: assetData.symbol,
-      },
-    },
+export const upsertAsset = async (
+  userId: number,
+  assetData: AssetUpdateInput,
+) => {
+  let asset = await prisma.asset.findUnique({
+    where: { userId_symbol: { userId, symbol: assetData.symbol } },
   });
 
-  if (existingAsset) {
-    // Weighted Average calculation logic
-    const currentTotalCost = existingAsset.amount * existingAsset.purchasePrice;
+  if (asset) {
+    const currentTotalCost = asset.amount * asset.purchasePrice;
     const newAdditionCost = assetData.amount * assetData.purchasePrice;
-    const totalAmount = existingAsset.amount + assetData.amount;
+    const totalAmount = asset.amount + assetData.amount;
     const newAveragePrice = (currentTotalCost + newAdditionCost) / totalAmount;
 
-    return prisma.asset.update({
-      where: { id: existingAsset.id },
-      data: {
-        amount: totalAmount,
-        purchasePrice: newAveragePrice,
-      },
+    asset = await prisma.asset.update({
+      where: { id: asset.id },
+      data: { amount: totalAmount, purchasePrice: newAveragePrice },
+    });
+  } else {
+    asset = await prisma.asset.create({
+      data: { ...assetData, userId },
     });
   }
 
-  // If the asset doesn't exist for this user, create a new record
-  return prisma.asset.create({
+  await prisma.transaction.create({
     data: {
-      ...assetData,
-      userId: userId,
+      assetId: asset.id,
+      type: "BUY",
+      amount: assetData.amount * assetData.purchasePrice,
+      shares: assetData.amount,
     },
   });
+
+  return asset;
 };
 
+export const getRecentTransactions = async (userId: number) => {
+  return prisma.transaction.findMany({
+    where: { asset: { userId } },
+    include: { asset: true },
+    orderBy: { createdAt: "desc" },
+    take: 10,
+  });
+};
 /**
  * Updates the last known market price of an asset.
  */

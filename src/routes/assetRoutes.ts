@@ -6,6 +6,7 @@ import {
   removeAsset,
   searchAssets,
   updateQuantity,
+  getTransactions
 } from "../controllers/assetController";
 import { authenticateToken } from "../middleware/authMiddleware";
 
@@ -135,5 +136,6 @@ router.patch("/:id", updateQuantity);
 router.delete("/:id", removeAsset);
 router.get("/search", searchAssets);
 router.get("/history", getHistory);
+router.get("/transactions", getTransactions);
 
 export default router;

@@ -12,7 +12,7 @@ import axios from "axios";
 import api from "../api/axios";
 import { useSettings } from "../hooks/useSettings";
 import { useNavigate } from "react-router-dom";
-import type { Asset } from "../types";
+import type { Asset, AssetResponse } from "../types";
 import {
   Loader2,
   TrendingUp,
@@ -124,7 +124,7 @@ const Analytics = () => {
           api.get<PortfolioHistoryEntry[]>("/assets/history", {
             signal: controller.signal,
           }),
-          api.get<Asset[]>("/assets", { signal: controller.signal }),
+          api.get<AssetResponse>("/assets", { signal: controller.signal }),
         ]);
 
         const formattedData = (historyRes.data || []).map((entry) => ({
@@ -136,7 +136,8 @@ const Analytics = () => {
         }));
 
         setData(formattedData);
-        setAssets(assetsRes.data || []);
+
+        setAssets(assetsRes.data.assets || []);
       } catch (error) {
         if (!axios.isCancel(error)) console.error("Fetch error:", error);
       } finally {

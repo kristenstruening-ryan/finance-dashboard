@@ -28,8 +28,8 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    localStorage.removeItem('vault_lab_sim');
-    localStorage.removeItem('vault_lab_user_context')
+    localStorage.removeItem("vault_lab_sim");
+    localStorage.removeItem("vault_lab_user_context");
     navigate("/login");
   };
 

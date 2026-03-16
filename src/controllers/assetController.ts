@@ -236,3 +236,14 @@ export const getHistory = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getTransactions = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+    const transactions = await assetService.getRecentTransactions(userId);
+    return res.status(200).json(transactions);
+  } catch (error) {
+    return res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+};
