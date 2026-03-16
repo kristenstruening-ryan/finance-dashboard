@@ -30,7 +30,7 @@ const LabSkeleton = () => {
 
         {/* Right Column: Diagnostics Card */}
         <div className="space-y-6">
-          <div className="bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 border border-white/5 h-[400px] flex flex-col items-center justify-center space-y-8">
+          <div className="bg-slate-900 rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 border border-white/5 h-100 flex flex-col items-center justify-center space-y-8">
             {/* Gauge Placeholder */}
             <div className="relative w-48 h-24 border-t-8 border-l-8 border-r-8 border-white/5 rounded-t-full animate-pulse" />
             <div className="h-12 w-24 bg-white/5 rounded-2xl animate-pulse" />

@@ -529,7 +529,6 @@ const VaultLab = () => {
         onConfirm={handleFinalExecution}
         trades={preparedTrades}
       />
-      <LabSkeleton />
     </div>
   );
 };
