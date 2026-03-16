@@ -9,9 +9,7 @@ services:
     plan: free
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: finvault-db
-          property: connectionString
+        sync: false 
       - key: JWT_SECRET
         generateValue: true
       - key: FINNHUB_KEY
@@ -30,4 +28,4 @@ services:
         fromService:
           type: web
           name: finvault-backend
-          property: host
+          property: url
