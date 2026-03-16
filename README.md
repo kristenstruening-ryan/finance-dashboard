@@ -19,10 +19,10 @@
 
 ## 💎 Core Features
 
+- **Vault Lab (Strategy Simulator):** A deterministic "sandbox" for portfolio rebalancing. Users can simulate allocation changes and visualize real-time risk/return impact before committing to trades.
 - **Real-time Portfolio Performance:** Dynamic line charts showing 30-day value snapshots via Recharts.
 - **Intelligent Asset Entry:** Automated weighted-average price calculations for multiple buy-ins of the same asset.
-- **Execution History:** Full audit log of BUY/SELL transactions with a custom-built confirmation modal for clearing logs.
-- **Responsive Analytics:** Asset distribution breakdown and individual ROI tracking.
+- **Execution History:** Full audit log of transactions with custom-built confirmation modals and weighted ROI tracking.
 - **Secure Auth:** JWT-based authentication with custom middleware for protected routes and bcrypt password hashing.
 
 ---
@@ -31,37 +31,39 @@
 
 ### 1. The "Weighted Average" Logic
 
-**The Problem:** Simply adding a new purchase price to an existing asset would ruin performance metrics and ROI calculations.
-**The Solution:** I implemented a custom `upsert` logic in the backend. When a user adds more of an asset they already own, the system calculates a new **Weighted Average Cost Basis** using the following formula:
+**The Problem:** Simply adding a new purchase price to an existing asset ruins performance metrics and ROI calculations.
+**The Solution:** I implemented a custom `upsert` logic in the backend. When a user adds more of an asset they already own, the system calculates a new **Weighted Average Cost Basis**:
 
 $$NewPrice = \frac{(CurrentShares \times CurrentPrice) + (NewShares \times NewPrice)}{TotalShares}$$
 
 ### 2. Balancing API Limits vs. Data Freshness
 
-**The Problem:** Financial APIs have strict rate limits. Refreshing prices on every component mount is inefficient and leads to 429 errors.
-**The Solution:** I built a **stale-data detection layer**. Prices are only fetched from the external API if the `updatedAt` timestamp is older than 15 minutes; otherwise, the system serves the last cached price from the PostgreSQL database.
+**The Problem:** Financial APIs have strict rate limits. Refreshing prices on every component mount is inefficient.
+**The Solution:** Built a **stale-data detection layer**. Prices are only fetched if the `updatedAt` timestamp is older than 15 minutes; otherwise, the system serves the cached price from PostgreSQL.
 
-### 3. Maintaining UI State Consistency
+### 3. Visual Stability & Skeleton Loading
 
-**The Problem:** When a user clears their trade history or updates an asset, multiple dashboard components (Chart, Activity, Stats) need to reflect that instantly.
-**The Solution:** Leveraged **React Context** to manage global user state and **Axios Interceptors** to handle token expiration and unauthorized access gracefully.
-
----
-
-## 🐳 Docker Architecture
-
-To ensure a consistent development and production environment, this application is fully containerized.
-
-- **Multi-Stage Builds:** Optimized Dockerfiles to keep production images lightweight.
-- **Orchestration:** Used `docker-compose` to manage the lifecycle of three separate services: **Frontend** (Nginx), **Backend** (Node.js), and **Database** (PostgreSQL).
-- **Development Parity:** Docker ensures that the app runs identically on my MacBook Air as it would on a production AWS server, eliminating "works on my machine" issues.
+**The Problem:** Fetching complex portfolio simulations created "layout jumps" where components popped in unevenly, hurting the perceived performance.
+**The Solution:** Developed a custom **Skeleton Loading** system. I engineered a `LabSkeleton` component that mirrors the exact grid dimensions of the dashboard using Tailwind’s `animate-pulse`, ensuring zero layout shift during data hydration.
 
 ---
 
-## 📸 Screenshots
+## 📸 Gallery
 
-_(Add your screenshots here after deployment)_
-![Dashboard Overview](https://via.placeholder.com/800x450?text=Dashboard+Preview)
+### 🖥 The Dashboard
+
+A high-density view of market performance, asset distribution, and real-time ROI tracking.
+![Dashboard Overview](./assets/screenshots/dark_mode_dash.png)
+
+### 🧪 Vault Lab Simulator
+
+Interactive portfolio rebalancing with real-time risk diagnostics and "Strategy Commit" workflow.
+![Vault Lab Simulator](./assets/screenshots/strategy_sim.png)
+
+### 📱 Responsive Design
+
+Optimized mobile experience ensuring financial data is readable on any device size.
+![Mobile View](./assets/screenshots/mobile_portfolio.png)
 
 ---
 
@@ -117,9 +119,10 @@ docker-compose up --build
 
 ## 📜 Key Learnings
 
-- **Prisma 7 Transition:** Gained experience migrating to Prisma 7 and implementing the new Driver Adapter system for better performance.
+- **Prisma 7 Transition:** Gained experience migrating to Prisma 7 and implementing the new Driver Adapter system for optimized performance.
 - **Data Visualization:** Learned how to transform raw database snapshots into time-series data compatible with Recharts.
 - **API Design:** Developed a RESTful API that handles both local database records and external third-party data fetches concurrently.
+- **UI Architecture:** Learned to manage highly interactive state (sliders, gauges) while maintaining 60fps performance and smooth loading transitions.
 
 ---
 
