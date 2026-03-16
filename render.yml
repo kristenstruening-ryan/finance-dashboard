@@ -1,0 +1,34 @@
+services:
+  # 1. The Backend (Root Directory)
+  - type: web
+    name: finvault-backend
+    env: docker
+    repo: https://github.com/kristenstruening-ryan/finance-dashboard.git
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finvault-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FINNHUB_KEY
+        sync: false # Set this manually in Render dashboard later
+
+  # 2. The Frontend (Client Directory)
+  - type: web
+    name: finvault-frontend
+    env: docker
+    repo: https://github.com/kristenstruening-ryan/finance-dashboard.git
+    # context is the client folder so Docker only sees frontend files
+    dockerContext: ./client
+    dockerfilePath: ./client/Dockerfile
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        fromStack:
+          type: web
+          name: finvault-backend
+          property: url
