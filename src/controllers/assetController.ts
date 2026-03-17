@@ -78,7 +78,7 @@ export const getAssetsByUser = async (req: AuthRequest, res: Response) => {
     const STALE_TIME = 15 * 60 * 1000; // 15 minutes
 
     const enhancedAssets = await Promise.all(
-      assets.map(async (asset) => {
+      assets.map(async (asset: any) => {
         const now = Date.now();
         const lastUpdate = new Date(asset.updatedAt).getTime();
         const isStale = now - lastUpdate > STALE_TIME;
@@ -117,8 +117,8 @@ export const getAssetsByUser = async (req: AuthRequest, res: Response) => {
       }),
     );
 
-    const totalMarketValue = enhancedAssets.reduce((acc, a) => acc + a.totalValue, 0);
-    const totalCostBasis = enhancedAssets.reduce((acc, a) => acc + a.costBasis, 0);
+    const totalMarketValue = enhancedAssets.reduce((acc: any, a: any) => acc + a.totalValue, 0);
+    const totalCostBasis = enhancedAssets.reduce((acc: any, a: any) => acc + a.costBasis, 0);
     const totalGain = totalMarketValue - totalCostBasis;
     const totalROI = totalCostBasis > 0 ? (totalGain / totalCostBasis) * 100 : 0;
 
@@ -154,7 +154,7 @@ export const searchAssets = async (req: Request, res: Response) => {
       take: 5,
     });
 
-    const formattedLocal: SearchResult[] = localAssets.map((asset) => ({
+    const formattedLocal: SearchResult[] = localAssets.map((asset: any) => ({
       symbol: asset.symbol,
       name: asset.name,
       type: asset.category,

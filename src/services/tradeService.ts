@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Asset } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 interface Trade {
@@ -11,8 +11,7 @@ interface Trade {
 export const executeRebalance = async (trades: Trade[]) => {
   // Use a database transaction to ensure all updates happen together
   return await prisma.$transaction(async (tx) => {
-    const updatedAssets = [];
-
+    const updatedAssets: Asset[] = [];
     for (const trade of trades) {
       // Update the Asset quantity
       const updatedAsset = await tx.asset.update({
@@ -44,21 +43,21 @@ export const getRecentTransactions = async (userId: number) => {
   return await prisma.transaction.findMany({
     where: {
       asset: {
-        userId: userId // Filter transactions belonging to this user's assets
-      }
+        userId: userId, // Filter transactions belonging to this user's assets
+      },
     },
     include: {
       asset: {
         select: {
           symbol: true,
           name: true,
-        }
-      }
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc' // Newest trades first
+      createdAt: "desc", // Newest trades first
     },
-    take: 10 // Only show the last 10 for the dashboard
+    take: 10, // Only show the last 10 for the dashboard
   });
 };
 
