@@ -6,4 +6,4 @@ COPY . .
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
 RUN npm run build
 EXPOSE 3001
-CMD npx prisma migrate deploy && npm start
+CMD npx prisma generate && npm start
